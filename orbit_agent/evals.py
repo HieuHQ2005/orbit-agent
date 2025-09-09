@@ -116,8 +116,18 @@ def run_evals(scenarios: List[Scenario]) -> List[EvalRecord]:
             playbook = Path(sc.playbook_path).read_text()
 
         history = [{"role": "user", "content": sc.prompt}]
+        persona_ctx = []
+        if sc.persona:
+            persona_ctx.append(f"Persona: {sc.persona}")
+        if sc.stage:
+            persona_ctx.append(f"Stage: {sc.stage}")
+        if sc.rubric:
+            persona_ctx.append(
+                "Success Rubric:" + "\n" + "\n".join(f"- {r}" for r in sc.rubric)
+            )
+        ctx = "\n".join(persona_ctx) if persona_ctx else None
         start = time.time()
-        res = advisor(history=history, playbook=playbook)
+        res = advisor(history=history, playbook=playbook, context=ctx)
         latency_ms = (time.time() - start) * 1000.0
 
         actions_lines = _split_lines(res.actions_48h)
@@ -250,3 +260,72 @@ def save_grades(graded: List[Dict[str, Any]], out_path: str | Path) -> None:
     with p.open("w") as f:
         for g in graded:
             f.write(json.dumps(g) + "\n")
+
+
+def load_eval_records(path: str | Path) -> List[EvalRecord]:
+    p = Path(path)
+    recs: List[EvalRecord] = []
+    if not p.exists():
+        return recs
+    for line in p.read_text().splitlines():
+        if not line.strip():
+            continue
+        recs.append(EvalRecord(**json.loads(line)))
+    return recs
+
+
+def summarize_by_scenario(records: List[EvalRecord]) -> List[Dict[str, Any]]:
+    from collections import defaultdict
+
+    groups = defaultdict(list)
+    for r in records:
+        groups[r.scenario_id].append(r)
+    rows = []
+    for sid, items in groups.items():
+        n = len(items)
+        avg_score = sum(i.critic_score for i in items) / n
+        avg_overlap = sum((i.overlap_ratio or 0.0) for i in items) / n
+        avg_latency = sum(i.latency_ms for i in items) / n
+        rows.append(
+            {
+                "scenario_id": sid,
+                "count": n,
+                "avg_critic_score": avg_score,
+                "avg_overlap": avg_overlap,
+                "avg_latency_ms": avg_latency,
+            }
+        )
+    return rows
+
+
+def export_summary_csv(records: List[EvalRecord], out_path: str | Path) -> None:
+    import csv
+
+    rows = summarize_by_scenario(records)
+    with open(out_path, "w", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "scenario_id",
+                "count",
+                "avg_critic_score",
+                "avg_overlap",
+                "avg_latency_ms",
+            ],
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+
+def export_summary_md(records: List[EvalRecord], out_path: str | Path) -> None:
+    rows = summarize_by_scenario(records)
+    lines = [
+        "| Scenario | Count | Avg Score | Overlap | Latency (ms) |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for r in rows:
+        lines.append(
+            f"| {r['scenario_id']} | {r['count']} | {r['avg_critic_score']:.2f} | {r['avg_overlap']:.2f} | {r['avg_latency_ms']:.0f} |"
+        )
+    Path(out_path).write_text("\n".join(lines) + "\n")

@@ -22,6 +22,9 @@ from .evals import (
     grade_with_rubric,
     summarize_grades,
     save_grades,
+    load_eval_records,
+    export_summary_csv,
+    export_summary_md,
 )
 import os
 import subprocess
@@ -606,42 +609,93 @@ def eval_grade(
         raise typer.Exit(1)
 
 
-@models_app.command("list")
-def models_list():
-    """List models from the active provider (OpenAI only for now)."""
+@eval_app.command("summary")
+def eval_summary(
+    input_path: str = typer.Option(
+        ".orbit/evals/latest.jsonl", help="Path to JSONL results"
+    ),
+    csv_out: str = typer.Option(None, help="Write scenario summary to CSV here"),
+    md_out: str = typer.Option(None, help="Write scenario summary to Markdown here"),
+):
+    """Export per-scenario summaries to CSV/Markdown."""
     try:
-        import os
-        from openai import OpenAI
-
-        key = os.getenv("OPENAI_API_KEY")
-        if not key:
-            console.print("[red]OPENAI_API_KEY not set[/red]")
-            raise typer.Exit(1)
-
-        client = OpenAI(api_key=key)
-        resp = client.models.list()
-        ids = [m.id for m in resp.data]
-        # Prefer relevant chat-capable frontier models
-        preferred = [
-            i
-            for i in ids
-            if any(
-                i.startswith(p)
-                for p in (
-                    "gpt-5",
-                    "gpt-4.1",
-                    "gpt-4o",
-                    "o3",
-                )
+        recs = load_eval_records(input_path)
+        if not recs:
+            console.print("[yellow]No records to summarize[/yellow]")
+            raise typer.Exit(0)
+        if csv_out:
+            export_summary_csv(recs, csv_out)
+            console.print(f"[green]CSV written:[/green] {csv_out}")
+        if md_out:
+            export_summary_md(recs, md_out)
+            console.print(f"[green]Markdown written:[/green] {md_out}")
+        if not csv_out and not md_out:
+            console.print(
+                "[yellow]No output paths specified (use --csv-out or --md-out)[/yellow]"
             )
-        ]
-        console.print("[bold]Candidate Models[/]:")
-        for mid in sorted(preferred):
-            console.print(f"- {mid}")
-        others = [i for i in ids if i not in preferred]
-        console.print("\n[dim]Other models (truncated)[/dim]")
-        for mid in sorted(others)[:20]:
-            console.print(f"- {mid}")
+    except Exception as e:
+        logger.error(f"Eval summary failed: {e}")
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise typer.Exit(1)
+
+
+@models_app.command("list")
+def models_list(
+    provider: str = typer.Option("openai", help="Provider: openai|anthropic")
+):
+    """List models from a provider (token-free)."""
+    try:
+        provider = provider.lower()
+        if provider == "openai":
+            import os
+            from openai import OpenAI
+
+            key = os.getenv("OPENAI_API_KEY")
+            if not key:
+                console.print("[red]OPENAI_API_KEY not set[/red]")
+                raise typer.Exit(1)
+            client = OpenAI(api_key=key)
+            resp = client.models.list()
+            ids = [m.id for m in resp.data]
+            preferred = [
+                i
+                for i in ids
+                if any(i.startswith(p) for p in ("gpt-5", "gpt-4.1", "gpt-4o", "o3"))
+            ]
+            console.print("[bold]OpenAI Candidate Models[/]:")
+            for mid in sorted(preferred):
+                console.print(f"- {mid}")
+            others = [i for i in ids if i not in preferred]
+            console.print("\n[dim]Other models (truncated)[/dim]")
+            for mid in sorted(others)[:20]:
+                console.print(f"- {mid}")
+        elif provider == "anthropic":
+            try:
+                import os
+                import anthropic
+
+                key = os.getenv("ANTHROPIC_API_KEY")
+                if not key:
+                    console.print("[red]ANTHROPIC_API_KEY not set[/red]")
+                    raise typer.Exit(1)
+                client = anthropic.Anthropic(api_key=key)
+                # Anthropic SDK provides a fixed set; list known public IDs if API lacks listing.
+                known = [
+                    "claude-3-5-sonnet-20241022",
+                    "claude-3-5-haiku-20241022",
+                    "claude-3-opus-20240229",
+                    "claude-3-sonnet-20240229",
+                    "claude-3-haiku-20240307",
+                ]
+                console.print("[bold]Anthropic Models (known set)[/]:")
+                for mid in known:
+                    console.print(f"- {mid}")
+            except Exception as e:
+                console.print(f"[red]Anthropic listing not available:[/red] {e}")
+                raise typer.Exit(1)
+        else:
+            console.print("[red]Unsupported provider[/red]")
+            raise typer.Exit(1)
     except Exception as e:
         logger.error(f"Model listing failed: {e}")
         console.print(f"[bold red]Error:[/bold red] {e}")

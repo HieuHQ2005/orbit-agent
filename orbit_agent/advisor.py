@@ -268,6 +268,7 @@ class HighOrbitAdvisor(dspy.Module):
 
                 from .tools.retention import calculate_cohort_retention
                 from .tools.funnel import analyze_funnel, FunnelStep
+                from .tools.finance import runway_months, expected_value
 
                 # Extract inline JSON-ish snippet if present
                 m = re.search(r"(\[.*\]|\{.*\})", history_str, re.DOTALL)
@@ -289,6 +290,32 @@ class HighOrbitAdvisor(dspy.Module):
                         res = analyze_funnel(steps)
                         rates = ", ".join(f"{r:.1f}%" for r in res.conversion_rates)
                         tool_results = f"Funnel steps={len(steps)}; Conversion: {rates}"
+                    elif isinstance(data, dict) and {"cash", "burn"} <= set(
+                        data.keys()
+                    ):
+                        rr = runway_months(
+                            float(data["cash"]),
+                            float(data["burn"]),
+                            float(data.get("growth", 0)),
+                        )
+                        tool_results = f"Runway≈{rr.months:.1f}m; Alive={'Yes' if rr.default_alive else 'No'}"
+                    elif isinstance(data, dict) and {
+                        "p_upside",
+                        "ev_upside",
+                        "p_mid",
+                        "ev_mid",
+                        "p_down",
+                        "ev_down",
+                    } <= set(data.keys()):
+                        ev = expected_value(
+                            float(data["p_upside"]),
+                            float(data["ev_upside"]),
+                            float(data["p_mid"]),
+                            float(data["ev_mid"]),
+                            float(data["p_down"]),
+                            float(data["ev_down"]),
+                        )
+                        tool_results = f"EV≈${ev:,.0f} across scenarios"
             except Exception:
                 tool_results = tool_results or ""
 
@@ -297,8 +324,39 @@ class HighOrbitAdvisor(dspy.Module):
 
             cfg = get_config()
             best_of_n = max(1, int(getattr(cfg, "best_of_n", 1)))
+            overlap_alpha = float(getattr(cfg, "overlap_alpha", 2.0) or 2.0)
             best_payload = None
-            best_score = -1
+            best_score = -1e9
+
+            # Optional separate critic LM
+            critic_lm = None
+            try:
+                import dspy as _dspy
+
+                if getattr(cfg, "critic_model", None):
+                    critic_lm = _dspy.LM(model=cfg.critic_model)
+            except Exception:
+                critic_lm = None
+
+            def _ngram_set(text: str, n: int = 3) -> set[str]:
+                tokens = [t for t in text.lower().split() if t]
+                return set(
+                    [
+                        " ".join(tokens[i : i + n])
+                        for i in range(0, max(0, len(tokens) - n + 1))
+                    ]
+                )
+
+            def _overlap_ratio(a: str, b: str, n: int = 3) -> float:
+                if not a or not b:
+                    return 0.0
+                A = _ngram_set(a, n)
+                B = _ngram_set(b, n)
+                if not A or not B:
+                    return 0.0
+                inter = len(A & B)
+                union = len(A | B)
+                return inter / union
 
             for _ in range(best_of_n):
                 logger.info("Generating advice with LLM")
@@ -310,24 +368,29 @@ class HighOrbitAdvisor(dspy.Module):
                     tool_results=tool_results or "No tools used in this session",
                 )
 
-                # Critique with retry
+                # Critique with retry (optionally on separate critic LM)
                 logger.info("Getting critique")
-                critique = self._call_llm_with_retry(
-                    self.critic,
-                    advice=self._clean_output(draft.advice),
-                    context=context_with_history,
-                )
+                advice_clean = self._clean_output(draft.advice)
+                kwargs = dict(advice=advice_clean, context=context_with_history)
+                if critic_lm is not None:
+                    critique = self._call_llm_with_retry(
+                        self.critic, **kwargs, lm=critic_lm
+                    )
+                else:
+                    critique = self._call_llm_with_retry(self.critic, **kwargs)
 
-                score = int(getattr(critique, "score", 0) or 0)
+                score_raw = int(getattr(critique, "score", 0) or 0)
+                overlap = _overlap_ratio(advice_clean, playbook)
+                score = score_raw - overlap_alpha * overlap
                 if score > best_score:
                     best_score = score
                     best_payload = (
-                        self._clean_output(draft.advice),
+                        advice_clean,
                         self._clean_output(draft.actions_48h),
                         self._clean_output(draft.metric_to_watch),
                         self._clean_output(draft.risks),
                         critique.feedback,
-                        score,
+                        score_raw,
                     )
 
             advice, actions_48h, metric_to_watch, risks, feedback, score = best_payload

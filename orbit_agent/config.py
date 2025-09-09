@@ -77,6 +77,8 @@ class AppConfig:
     # Generation quality controls
     best_of_n: int = 1
     temperature: float = 0.7
+    critic_model: Optional[str] = None
+    overlap_alpha: float = 2.0
 
     def __post_init__(self):
         """Validate configuration after initialization"""
@@ -184,6 +186,8 @@ def load_config() -> AppConfig:
         cost_per_1k_completion=float(os.getenv("ORBIT_COST_PER_1K_COMPLETION", "0")),
         best_of_n=int(os.getenv("ORBIT_BEST_OF_N", "1")),
         temperature=float(os.getenv("ORBIT_TEMPERATURE", "0.7")),
+        critic_model=os.getenv("ORBIT_CRITIC_LM"),
+        overlap_alpha=float(os.getenv("ORBIT_OVERLAP_ALPHA", "2.0")),
     )
 
     return config
