@@ -1,7 +1,7 @@
 PY?=python3
 VENV?=venv
 
-.PHONY: bootstrap bootstrap-prod test lint fmt ci chat clean
+.PHONY: bootstrap bootstrap-prod test lint fmt ci chat config clean
 
 bootstrap:
 	@bash scripts/bootstrap_venv.sh dev $(PY)
@@ -23,7 +23,9 @@ ci: lint test
 chat:
 	@$(VENV)/bin/python -m orbit_agent.cli chat
 
+config:
+	@$(VENV)/bin/python -m orbit_agent.cli config-info
+
 clean:
 	rm -rf $(VENV) __pycache__ .pytest_cache
 	find . -name "*.pyc" -delete
-
