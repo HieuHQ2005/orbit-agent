@@ -93,7 +93,9 @@ class AppConfig:
 def _determine_model_and_key() -> tuple[str, Optional[str]]:
     """Determine which model and API key to use"""
     explicit_model = os.getenv("ORBIT_LM")
-    provider_hint = os.getenv("LM_PROVIDER")  # Optional compatibility env: openai|anthropic|ollama
+    provider_hint = os.getenv(
+        "LM_PROVIDER"
+    )  # Optional compatibility env: openai|anthropic|ollama
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 

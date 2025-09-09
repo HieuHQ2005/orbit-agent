@@ -158,11 +158,12 @@ class HighOrbitAdvisor(dspy.Module):
 
                 est_in_toks = int((in_chars / 4.0) + 0.5)
                 est_out_toks = int((out_chars / 4.0) + 0.5)
-                if cfg.track_usage and (cfg.cost_per_1k_prompt > 0 or cfg.cost_per_1k_completion > 0):
-                    cost = (
-                        (est_in_toks / 1000.0) * cfg.cost_per_1k_prompt
-                        + (est_out_toks / 1000.0) * cfg.cost_per_1k_completion
-                    )
+                if cfg.track_usage and (
+                    cfg.cost_per_1k_prompt > 0 or cfg.cost_per_1k_completion > 0
+                ):
+                    cost = (est_in_toks / 1000.0) * cfg.cost_per_1k_prompt + (
+                        est_out_toks / 1000.0
+                    ) * cfg.cost_per_1k_completion
                     logger.info(
                         f"LLM {module.__class__.__name__}: {duration_ms:.0f} ms, in≈{est_in_toks} tok, out≈{est_out_toks} tok, cost≈${cost:.4f}"
                     )
