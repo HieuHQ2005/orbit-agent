@@ -17,6 +17,9 @@ class Scenario:
     id: str
     prompt: str
     playbook_path: str | None = None
+    persona: str | None = None
+    stage: str | None = None
+    rubric: List[str] | None = None
 
 
 @dataclass
@@ -46,6 +49,9 @@ def load_scenarios(path: str | Path) -> List[Scenario]:
                 id=item.get("id") or f"s{i+1}",
                 prompt=item["prompt"],
                 playbook_path=item.get("playbook"),
+                persona=item.get("persona"),
+                stage=item.get("stage"),
+                rubric=item.get("rubric"),
             )
         )
     return scenarios
@@ -126,10 +132,56 @@ def summarize_results(records: List[EvalRecord]) -> Dict[str, Any]:
     }
 
 
+# Optional: experimental grading with an explicit rubric using LLM
+try:
+    import dspy
+
+    class RubricGrade(dspy.Signature):
+        """You are grading a startup advice response against a rubric.
+        Return a JSON object strictly with fields: overall (0-10), feedback, criteria.
+        'criteria' maps each rubric item to pass/fail and a brief note.
+        """
+
+        persona: str = dspy.InputField()
+        stage: str = dspy.InputField()
+        prompt: str = dspy.InputField()
+        rubric: str = dspy.InputField(desc="Bulleted list of rubric items")
+        advice: str = dspy.InputField()
+
+        grade_json: str = dspy.OutputField()
+
+    _rubric_grader = dspy.Predict(RubricGrade)
+
+    def grade_with_rubric(
+        records: List[EvalRecord], scenarios: List[Scenario]
+    ) -> List[Dict[str, Any]]:
+        id_to_scn = {s.id: s for s in scenarios}
+        graded: List[Dict[str, Any]] = []
+        for r in records:
+            sc = id_to_scn.get(r.scenario_id)
+            if not sc or not sc.rubric:
+                continue
+            rubric_text = "\n".join(f"- {item}" for item in sc.rubric)
+            out = _rubric_grader(
+                persona=sc.persona or "",
+                stage=sc.stage or "",
+                prompt=sc.prompt,
+                rubric=rubric_text,
+                advice=r.advice,
+            )
+            graded.append({
+                "scenario_id": r.scenario_id,
+                "grade_json": out.grade_json,
+            })
+        return graded
+except Exception:  # pragma: no cover
+    def grade_with_rubric(records: List[EvalRecord], scenarios: List[Scenario]):
+        return []
+
+
 def save_eval_results(records: List[EvalRecord], out_path: str | Path) -> None:
     p = Path(out_path)
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("w") as f:
         for r in records:
             f.write(json.dumps(asdict(r)) + "\n")
-

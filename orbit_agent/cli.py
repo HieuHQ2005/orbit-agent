@@ -32,6 +32,8 @@ ctx_app = typer.Typer(help="Manage your Orbit context")
 eval_app = typer.Typer(help="Run evals and generate reports")
 app.add_typer(ctx_app, name="context")
 app.add_typer(eval_app, name="eval")
+models_app = typer.Typer(help="List available models for the active provider")
+app.add_typer(models_app, name="models")
 
 
 @app.callback()
@@ -544,6 +546,48 @@ def eval_report(
             console.print(f"- {k}: {v}")
     except Exception as e:
         logger.error(f"Eval report failed: {e}")
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise typer.Exit(1)
+
+
+@models_app.command("list")
+def models_list():
+    """List models from the active provider (OpenAI only for now)."""
+    try:
+        import os
+        from openai import OpenAI
+
+        key = os.getenv("OPENAI_API_KEY")
+        if not key:
+            console.print("[red]OPENAI_API_KEY not set[/red]")
+            raise typer.Exit(1)
+
+        client = OpenAI(api_key=key)
+        resp = client.models.list()
+        ids = [m.id for m in resp.data]
+        # Prefer relevant chat-capable frontier models
+        preferred = [
+            i
+            for i in ids
+            if any(
+                i.startswith(p)
+                for p in (
+                    "gpt-5",
+                    "gpt-4.1",
+                    "gpt-4o",
+                    "o3",
+                )
+            )
+        ]
+        console.print("[bold]Candidate Models[/]:")
+        for mid in sorted(preferred):
+            console.print(f"- {mid}")
+        others = [i for i in ids if i not in preferred]
+        console.print("\n[dim]Other models (truncated)[/dim]")
+        for mid in sorted(others)[:20]:
+            console.print(f"- {mid}")
+    except Exception as e:
+        logger.error(f"Model listing failed: {e}")
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(1)
 

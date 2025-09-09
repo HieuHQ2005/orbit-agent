@@ -1,0 +1,55 @@
+scenarios:
+  - id: seed_ceo_focus
+    persona: "Founder-CEO, 2-person team, zero revenue"
+    stage: "Pre-seed"
+    prompt: "We have 10 interviews suggesting pain but no commitments. How do we get 3 paid design partners in 14 days?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Actionability: concrete steps with owners and deadlines"
+      - "Specific outreach: named segments or job titles, with scripts"
+      - "Measurement: leading indicator within 1-2 weeks"
+      - "Courageous tradeoffs: deprioritizes comfort features for decisive tests"
+
+  - id: series_a_ceo_retention
+    persona: "Founder-CEO, 15 FTE, $100k MRR"
+    stage: "Early growth"
+    prompt: "Logo churn ticked to 3% last month. Which cohorts should we diagnose first and what actions in the next 48h?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Cohort thinking: segment by ICP/use-case, not averages"
+      - "Hypothesis-driven: proposes concrete causes and tests"
+      - "Cross-functional: product + CS + pricing interplay"
+      - "Immediate actions: 48h calendar-blocked tasks"
+
+  - id: consumer_app_activation
+    persona: "PM, Consumer app, 20k WAU"
+    stage: "Product-market search"
+    prompt: "Activation from signup to first value is 17%. Propose a 1-week plan to hit 25% and what to cut to get there."
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Activation metric clarity: precise step definition and baseline"
+      - "Small-bets: 3-5 experiments with measurable deltas"
+      - "Qual + quant: combines funnel data with user calls"
+      - "Cut list: explicit deprioritizations for bandwidth"
+
+  - id: enterprise_pipeline
+    persona: "Founder, Enterprise B2B, 6-month cycles"
+    stage: "Pilot to contract"
+    prompt: "We have 4 late-stage deals stuck on security review. What should I do this week to force a decision?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Deal mechanics: identifies blockers and stakeholders"
+      - "Mutual close plan: steps, owners, dates"
+      - "Value re-anchoring: ROI or risk framing"
+      - "Escalation: exec alignment or withdraw strategy"
+
+  - id: pricing_reframe
+    persona: "Go-to-market lead"
+    stage: "Post-MVP"
+    prompt: "Our per-seat plan stalls at 30 seats. How to reframe pricing to expand accounts in 2 weeks?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Wedge expansion: module/usage or value metrics"
+      - "Pilot offer: specific terms and success criteria"
+      - "Objection-handling: equips AE with scripts"
+      - "Analysis: before/after unit economics"
