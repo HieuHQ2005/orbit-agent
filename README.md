@@ -127,7 +127,7 @@ docker run -p 5000:5000 --env-file .env orbit-agent
 ## Contributing
 
 ```bash
-# Install development dependencies
+# Install development dependencies  
 pip install -r requirements-dev.txt
 
 # Run tests
@@ -137,4 +137,12 @@ pytest -q
 black .
 ruff check .
 mypy .
+
+# Optional: set up git hooks (pre-commit)
+pre-commit install
+# or via Makefile (after bootstrapping venv):
+make hooks
+
+# Run all hooks against the repo
+pre-commit run -a
 ```
