@@ -1,0 +1,13 @@
+scenarios:
+  - id: yc_dilution
+    prompt: "I'm considering YC. Is the 7% dilution worth it?"
+    playbook: playbooks/high_orbit.yaml
+  - id: default_alive
+    prompt: "We have $800k cash and $55k burn. Are we default-alive?"
+    playbook: playbooks/high_orbit.yaml
+  - id: focus_plan
+    prompt: "Create a ruthless 48h focus plan to validate paid design partner demand for our B2B SaaS."
+    playbook: playbooks/high_orbit.yaml
+  - id: raise_round
+    prompt: "Should I raise a round now or wait 6 months? Pros and cons?"
+    playbook: playbooks/high_orbit.yaml

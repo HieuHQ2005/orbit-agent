@@ -14,6 +14,12 @@ from .tools.finance import runway_months, expected_value
 from .tools.retention import calculate_cohort_retention
 from .tools.funnel import analyze_funnel, FunnelStep
 from .memory import load_context, save_context
+from .evals import (
+    load_scenarios,
+    run_evals,
+    summarize_results,
+    save_eval_results,
+)
 import os
 import subprocess
 
@@ -23,7 +29,9 @@ logger = logging.getLogger(__name__)
 
 app = typer.Typer(help="Orbit Agent CLI — brutally honest startup advisor")
 ctx_app = typer.Typer(help="Manage your Orbit context")
+eval_app = typer.Typer(help="Run evals and generate reports")
 app.add_typer(ctx_app, name="context")
+app.add_typer(eval_app, name="eval")
 
 
 @app.callback()
@@ -477,6 +485,67 @@ def context_edit(
     except Exception as e:
         logger.error(f"Failed to edit context: {e}")
         console.print(f"[bold red]Error:[/bold red] {e}")
+
+
+@eval_app.command("run")
+def eval_run(
+    dataset: str = typer.Option(
+        "evals/scenarios.yaml", help="Path to scenarios YAML"
+    ),
+    out: str = typer.Option(
+        ".orbit/evals/latest.jsonl", help="Path to save JSONL results"
+    ),
+):
+    """Run evals on scenarios and save JSONL results."""
+    try:
+        scenarios = load_scenarios(dataset)
+        if not scenarios:
+            console.print("[yellow]No scenarios found[/yellow]")
+            raise typer.Exit(1)
+
+        console.print(f"[dim]Loaded {len(scenarios)} scenarios[/dim]")
+        with console.status("[bold green]Evaluating..."):
+            records = run_evals(scenarios)
+        save_eval_results(records, out)
+        console.print(f"[green]Saved results to {out}[/green]")
+        summary = summarize_results(records)
+        console.print("\n[bold]Summary[/]:")
+        for k, v in summary.items():
+            console.print(f"- {k}: {v}")
+    except Exception as e:
+        logger.error(f"Eval run failed: {e}")
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise typer.Exit(1)
+
+
+@eval_app.command("report")
+def eval_report(
+    results_path: str = typer.Argument(
+        ..., help="Path to JSONL results from eval run"
+    ),
+):
+    """Summarize a JSONL results file from eval run."""
+    try:
+        p = Path(results_path)
+        if not p.exists():
+            console.print(f"[red]Not found:[/red] {results_path}")
+            raise typer.Exit(1)
+        records = []
+        for line in p.read_text().splitlines():
+            if not line.strip():
+                continue
+            records.append(json.loads(line))
+        from .evals import EvalRecord
+
+        rec_objs = [EvalRecord(**r) for r in records]
+        summary = summarize_results(rec_objs)
+        console.print("[bold]Summary[/]:")
+        for k, v in summary.items():
+            console.print(f"- {k}: {v}")
+    except Exception as e:
+        logger.error(f"Eval report failed: {e}")
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":
