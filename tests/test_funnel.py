@@ -14,7 +14,9 @@ def test_analyze_funnel_basic():
 
 
 def test_analyze_funnel_handles_zero_users():
-    steps = [FunnelStep(name="Visit", user_count=0), FunnelStep(name="Signup", user_count=10)]
+    steps = [
+        FunnelStep(name="Visit", user_count=0),
+        FunnelStep(name="Signup", user_count=10),
+    ]
     result = analyze_funnel(steps)
     assert result.conversion_rates == [0.0]
-

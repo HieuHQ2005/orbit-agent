@@ -14,4 +14,3 @@ def test_advisor_fallback_on_failure(monkeypatch):
     assert isinstance(result.advice, str)
     assert "technical difficulties" in result.advice.lower()
     assert result.score == 0
-

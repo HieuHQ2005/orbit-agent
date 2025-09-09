@@ -32,4 +32,3 @@ def test_expected_value_normalizes_probabilities():
 def test_expected_value_rejects_bad_probabilities():
     with pytest.raises(ValueError):
         expected_value(0.6, 100, 0.3, 50, 0.2, 0)
-

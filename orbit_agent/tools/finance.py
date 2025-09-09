@@ -1,13 +1,16 @@
-
 from __future__ import annotations
 from dataclasses import dataclass
+
 
 @dataclass
 class RunwayResult:
     months: float
     default_alive: bool
 
-def runway_months(cash: float, burn_per_month: float, revenue_growth: float = 0.0) -> RunwayResult:
+
+def runway_months(
+    cash: float, burn_per_month: float, revenue_growth: float = 0.0
+) -> RunwayResult:
     """
     Estimate runway months with a simple burn adjustment for revenue growth.
 
@@ -26,7 +29,15 @@ def runway_months(cash: float, burn_per_month: float, revenue_growth: float = 0.
     months = cash / effective_burn
     return RunwayResult(months=months, default_alive=months >= 18.0)
 
-def expected_value(p_up: float, ev_up: float, p_mid: float, ev_mid: float, p_down: float, ev_down: float) -> float:
+
+def expected_value(
+    p_up: float,
+    ev_up: float,
+    p_mid: float,
+    ev_mid: float,
+    p_down: float,
+    ev_down: float,
+) -> float:
     """
     Compute expected value given three scenarios.
 

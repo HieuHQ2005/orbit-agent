@@ -8,7 +8,9 @@ def test_calc_dilution_basic():
     res = calc_dilution(pre_money=6_000_000, raise_amount=500_000, option_pool_add=0.10)
     assert res.post_money == 6_500_000
     assert math.isclose(res.new_percent, 500_000 / 6_500_000, rel_tol=1e-9)
-    assert math.isclose(res.existing_percent, 1.0 - res.new_percent - 0.10, rel_tol=1e-9)
+    assert math.isclose(
+        res.existing_percent, 1.0 - res.new_percent - 0.10, rel_tol=1e-9
+    )
 
 
 def test_calc_dilution_invalid_pool():

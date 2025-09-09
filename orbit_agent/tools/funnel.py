@@ -1,17 +1,19 @@
-
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
+
 
 @dataclass
 class FunnelStep:
     name: str
     user_count: int
 
+
 @dataclass
 class FunnelAnalysisResult:
     steps: List[FunnelStep]
     conversion_rates: List[float]
+
 
 def analyze_funnel(steps: List[FunnelStep]) -> FunnelAnalysisResult:
     """

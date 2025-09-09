@@ -6,7 +6,7 @@ Built with **DSPy**. Opinionated toward YC‑style focus: default‑alive first,
 ## Features
 
 - **🎯 Smart Advisor**: Context-aware advice that adapts to your specific situation
-- **📱 Multi-channel**: CLI and SMS interfaces for advice on-the-go  
+- **📱 Multi-channel**: CLI and SMS interfaces for advice on-the-go
 - **🔧 Financial Tools**: Dilution, runway, EV calculations, funnel analysis
 - **🛡️ Production Ready**: Rate limiting, retries, secure webhooks, SQLite storage
 - **📊 Rich Output**: Beautiful tables and formatted responses
@@ -56,7 +56,7 @@ python -m orbit_agent.sms_server
 - Proper error handling with retries and timeouts
 - Secure Twilio webhook validation and rate limiting
 
-**✅ Enhanced Experience:**  
+**✅ Enhanced Experience:**
 - Smarter prompts that adapt to your context vs regurgitating playbooks
 - Rich CLI with progress indicators and colored output
 - Conversation memory across sessions
@@ -70,7 +70,7 @@ python -m orbit_agent.sms_server
 - `config-info` — show current configuration
 - `context show` — display your saved context in ~/.orbit/context.md
 - `context set "<text>"` — save/update your context
-- `dilution --pre PRE --raise AMOUNT` — post-money and ownership analysis  
+- `dilution --pre PRE --raise AMOUNT` — post-money and ownership analysis
 - `runway --cash C --burn B [--growth G]` — months runway, default‑alive status
 - `ev --p_upside P1 --ev_upside V1 ...` — expected value across scenarios
 - `retention 'JSON'` — cohort retention analysis
@@ -105,7 +105,7 @@ ORBIT_LOG_LEVEL=INFO
 orbit_agent/
   ├── cli.py                 # Rich CLI with proper logging
   ├── advisor.py             # Enhanced DSPy orchestration
-  ├── config.py              # Structured configuration management  
+  ├── config.py              # Structured configuration management
   ├── memory.py              # SQLite storage with fallbacks
   ├── sms_server.py          # Production-ready webhook server
   └── tools/                 # Financial calculation tools
@@ -151,10 +151,23 @@ docker run -p 5000:5000 --env-file .env orbit-agent
 - **Data privacy**: Conversations are stored locally in SQLite. Enable encryption for sensitive data.
 - **Cost control**: Monitor token usage with high-tier models. The tool prioritizes advice quality over cost optimization.
 
+## Usage Tracking (Optional)
+
+Enable approximate token and cost logging in stdout with env vars:
+
+```bash
+ORBIT_TRACK_USAGE=true
+# $ cost per 1K tokens for your selected model
+ORBIT_COST_PER_1K_PROMPT=0.005
+ORBIT_COST_PER_1K_COMPLETION=0.015
+```
+
+This uses rough estimates (≈4 chars per token) and logs latency, estimated tokens in/out, and an approximate cost per call.
+
 ## Contributing
 
 ```bash
-# Install development dependencies  
+# Install development dependencies
 pip install -r requirements-dev.txt
 
 # Run tests

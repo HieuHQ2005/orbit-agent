@@ -1,12 +1,13 @@
-
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
+
 
 @dataclass
 class CohortRetentionResult:
     cohort: List[int]
     retention_rates: List[float]
+
 
 def calculate_cohort_retention(cohorts: List[List[int]]) -> List[CohortRetentionResult]:
     """
@@ -28,6 +29,10 @@ def calculate_cohort_retention(cohorts: List[List[int]]) -> List[CohortRetention
             # Avoid divide-by-zero; return zeros for all periods
             retention_rates = [0.0 for _ in cohort]
         else:
-            retention_rates = [(retained_users / initial_size) * 100 for retained_users in cohort]
-        results.append(CohortRetentionResult(cohort=cohort, retention_rates=retention_rates))
+            retention_rates = [
+                (retained_users / initial_size) * 100 for retained_users in cohort
+            ]
+        results.append(
+            CohortRetentionResult(cohort=cohort, retention_rates=retention_rates)
+        )
     return results

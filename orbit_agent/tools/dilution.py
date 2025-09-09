@@ -1,6 +1,6 @@
-
 from __future__ import annotations
 from dataclasses import dataclass
+
 
 @dataclass
 class DilutionResult:
@@ -11,7 +11,10 @@ class DilutionResult:
     new_percent: float
     existing_percent: float
 
-def calc_dilution(pre_money: float, raise_amount: float, option_pool_add: float = 0.0) -> DilutionResult:
+
+def calc_dilution(
+    pre_money: float, raise_amount: float, option_pool_add: float = 0.0
+) -> DilutionResult:
     """
     Simple dilution math:
     post = pre + raise
@@ -22,15 +25,23 @@ def calc_dilution(pre_money: float, raise_amount: float, option_pool_add: float 
     if pre_money < 0 or raise_amount < 0:
         raise ValueError("pre_money and raise_amount must be non-negative")
     if option_pool_add < 0 or option_pool_add >= 1.0:
-        raise ValueError("option_pool_add must be between 0 and 1 (post-money fraction)")
+        raise ValueError(
+            "option_pool_add must be between 0 and 1 (post-money fraction)"
+        )
 
     post = pre_money + raise_amount
     if post <= 0:
         # Degenerate case: no value in the company
-        return DilutionResult(pre_money, raise_amount, option_pool_add, 0.0, 0.0, 1.0 - option_pool_add)
+        return DilutionResult(
+            pre_money, raise_amount, option_pool_add, 0.0, 0.0, 1.0 - option_pool_add
+        )
 
     new_pct = raise_amount / post
     if new_pct + option_pool_add > 1.0:
-        raise ValueError("option_pool_add too large for given raise; allocations exceed 100% post")
+        raise ValueError(
+            "option_pool_add too large for given raise; allocations exceed 100% post"
+        )
     existing_pct = 1.0 - new_pct - option_pool_add
-    return DilutionResult(pre_money, raise_amount, option_pool_add, post, new_pct, existing_pct)
+    return DilutionResult(
+        pre_money, raise_amount, option_pool_add, post, new_pct, existing_pct
+    )

@@ -12,4 +12,3 @@ def test_retention_handles_zero_size():
     cohorts = [[0, 0, 0]]
     results = calculate_cohort_retention(cohorts)
     assert results[0].retention_rates == [0.0, 0.0, 0.0]
-
