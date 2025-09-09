@@ -93,6 +93,7 @@ class AppConfig:
 def _determine_model_and_key() -> tuple[str, Optional[str]]:
     """Determine which model and API key to use"""
     explicit_model = os.getenv("ORBIT_LM")
+    provider_hint = os.getenv("LM_PROVIDER")  # Optional compatibility env: openai|anthropic|ollama
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 
@@ -111,13 +112,26 @@ def _determine_model_and_key() -> tuple[str, Optional[str]]:
         else:
             return explicit_model, None
 
-    # Auto-detect based on available keys
+    # Auto-detect based on available keys or provider hint
+    if provider_hint:
+        hint = provider_hint.lower()
+        if hint.startswith("ollama"):
+            return DEFAULT_OLLAMA, None
+        if hint.startswith("openai"):
+            if not openai_key:
+                raise ValueError("LM_PROVIDER=openai requires OPENAI_API_KEY")
+            return DEFAULT_OPENAI, openai_key
+        if hint.startswith("anthropic"):
+            if not anthropic_key:
+                raise ValueError("LM_PROVIDER=anthropic requires ANTHROPIC_API_KEY")
+            return DEFAULT_ANTHROPIC, anthropic_key
+
     if openai_key:
         return DEFAULT_OPENAI, openai_key
     elif anthropic_key:
         return DEFAULT_ANTHROPIC, anthropic_key
     else:
-        logger.info("No API keys found, defaulting to Ollama")
+        logger.info("No API keys found and no provider hint, defaulting to Ollama")
         return DEFAULT_OLLAMA, None
 
 
@@ -185,15 +199,33 @@ def configure_lm() -> AppConfig:
     config = get_config()
 
     try:
-        # Use generic LM wrapper; provider inferred from model prefix (openai/, anthropic/, ollama_*)
-        # API keys are read from environment by provider integrations.
-        lm = dspy.LM(
-            model=config.lm.model,
-            temperature=config.lm.temperature,
-            max_tokens=config.lm.max_tokens,
-        )
-        dspy.configure(lm=lm)
-        logger.info(f"Configured LM via dspy.LM: {config.lm.model}")
+        # Use custom lightweight LM adapters compatible with dsp/dspy Predict
+        from .lm_providers import OpenAIChatLM, OllamaLM
+
+        model = config.lm.model
+        lm_impl = None
+        if model.startswith("openai/"):
+            mname = model.replace("openai/", "")
+            lm_impl = OpenAIChatLM(
+                model=mname,
+                api_key=config.lm.api_key or os.getenv("OPENAI_API_KEY"),
+                temperature=config.lm.temperature,
+                max_tokens=config.lm.max_tokens,
+                api_base=os.getenv("OPENAI_BASE_URL"),
+            )
+        elif model.startswith("ollama_chat/") or model.startswith("ollama/"):
+            mname = model.replace("ollama_chat/", "").replace("ollama/", "")
+            lm_impl = OllamaLM(
+                model=mname,
+                base_url=config.lm.api_base or os.getenv("OLLAMA_API_BASE", "http://localhost:11434"),
+                temperature=config.lm.temperature,
+                max_tokens=config.lm.max_tokens,
+            )
+        else:
+            raise ValueError(f"Unsupported model provider for '{model}'. Use openai/ or ollama_chat/.")
+
+        dspy.configure(lm=lm_impl)
+        logger.info(f"Configured LM: {config.lm.model}")
         return config
 
     except Exception as e:
