@@ -540,6 +540,20 @@ def eval_report(
         console.print("[bold]Summary[/]:")
         for k, v in summary.items():
             console.print(f"- {k}: {v}")
+        # Print per-scenario brief
+        console.print("\n[bold]By Scenario[/]:")
+        from collections import defaultdict
+
+        by_id = defaultdict(list)
+        for r in rec_objs:
+            by_id[r.scenario_id].append(r)
+        for sid, items in by_id.items():
+            cs = sum(i.critic_score for i in items) / len(items)
+            ov = sum((i.overlap_ratio or 0.0) for i in items) / len(items)
+            lat = sum(i.latency_ms for i in items) / len(items)
+            console.print(
+                f"- {sid}: score={cs:.2f}, overlap={ov:.2f}, latency_ms={lat:.0f}"
+            )
     except Exception as e:
         logger.error(f"Eval report failed: {e}")
         console.print(f"[bold red]Error:[/bold red] {e}")

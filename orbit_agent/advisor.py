@@ -261,34 +261,55 @@ class HighOrbitAdvisor(dspy.Module):
 
             context_with_history = context + recent_context
 
-            # Generate advice with retry
-            logger.info("Generating advice with LLM")
-            draft = self._call_llm_with_retry(
-                self.generate,
-                history=history_str,
-                playbook=playbook,
-                context=context_with_history,
-                tool_results="No tools used in this session",
-            )
+            # Best-of-N generation and rerank by critic
+            from .config import get_config
 
-            # Critique with retry
-            logger.info("Getting critique")
-            critique = self._call_llm_with_retry(
-                self.critic,
-                advice=self._clean_output(draft.advice),
-                context=context_with_history,
-            )
+            cfg = get_config()
+            best_of_n = max(1, int(getattr(cfg, "best_of_n", 1)))
+            best_payload = None
+            best_score = -1
 
+            for _ in range(best_of_n):
+                logger.info("Generating advice with LLM")
+                draft = self._call_llm_with_retry(
+                    self.generate,
+                    history=history_str,
+                    playbook=playbook,
+                    context=context_with_history,
+                    tool_results="No tools used in this session",
+                )
+
+                # Critique with retry
+                logger.info("Getting critique")
+                critique = self._call_llm_with_retry(
+                    self.critic,
+                    advice=self._clean_output(draft.advice),
+                    context=context_with_history,
+                )
+
+                score = int(getattr(critique, "score", 0) or 0)
+                if score > best_score:
+                    best_score = score
+                    best_payload = (
+                        self._clean_output(draft.advice),
+                        self._clean_output(draft.actions_48h),
+                        self._clean_output(draft.metric_to_watch),
+                        self._clean_output(draft.risks),
+                        critique.feedback,
+                        score,
+                    )
+
+            advice, actions_48h, metric_to_watch, risks, feedback, score = best_payload
             result = dspy.Prediction(
-                advice=self._clean_output(draft.advice),
-                actions_48h=self._clean_output(draft.actions_48h),
-                metric_to_watch=self._clean_output(draft.metric_to_watch),
-                risks=self._clean_output(draft.risks),
-                critique=critique.feedback,
-                score=critique.score,
+                advice=advice,
+                actions_48h=actions_48h,
+                metric_to_watch=metric_to_watch,
+                risks=risks,
+                critique=feedback,
+                score=score,
             )
 
-            logger.info(f"Advice generated successfully, score: {critique.score}")
+            logger.info(f"Advice generated successfully, score: {score}")
             return result
 
         except Exception as e:

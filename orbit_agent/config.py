@@ -15,7 +15,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Default model configurations
-DEFAULT_OPENAI = "openai/gpt-4o-mini"
+DEFAULT_OPENAI = "openai/gpt-4.1"
 DEFAULT_ANTHROPIC = "anthropic/claude-3-5-sonnet-20240620"
 DEFAULT_OLLAMA = "ollama_chat/llama3.2"
 
@@ -74,6 +74,9 @@ class AppConfig:
     track_usage: bool = False
     cost_per_1k_prompt: float = 0.0
     cost_per_1k_completion: float = 0.0
+    # Generation quality controls
+    best_of_n: int = 1
+    temperature: float = 0.7
 
     def __post_init__(self):
         """Validate configuration after initialization"""
@@ -179,6 +182,8 @@ def load_config() -> AppConfig:
         track_usage=os.getenv("ORBIT_TRACK_USAGE", "false").lower() == "true",
         cost_per_1k_prompt=float(os.getenv("ORBIT_COST_PER_1K_PROMPT", "0")),
         cost_per_1k_completion=float(os.getenv("ORBIT_COST_PER_1K_COMPLETION", "0")),
+        best_of_n=int(os.getenv("ORBIT_BEST_OF_N", "1")),
+        temperature=float(os.getenv("ORBIT_TEMPERATURE", "0.7")),
     )
 
     return config

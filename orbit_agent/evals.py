@@ -37,6 +37,7 @@ class EvalRecord:
     format_ok: bool
     actions_count: int
     risks_count: int
+    overlap_ratio: float | None = None
 
 
 def load_scenarios(path: str | Path) -> List[Scenario]:
@@ -84,6 +85,25 @@ def _format_eval(
     return format_ok, actions_count, risks_count
 
 
+def _ngram_set(text: str, n: int = 3) -> set[str]:
+    tokens = [t for t in text.lower().split() if t]
+    return set(
+        [" ".join(tokens[i : i + n]) for i in range(0, max(0, len(tokens) - n + 1))]
+    )
+
+
+def _overlap_ratio(a: str, b: str, n: int = 3) -> float:
+    if not a or not b:
+        return 0.0
+    A = _ngram_set(a, n)
+    B = _ngram_set(b, n)
+    if not A or not B:
+        return 0.0
+    inter = len(A & B)
+    union = len(A | B)
+    return inter / union
+
+
 def run_evals(scenarios: List[Scenario]) -> List[EvalRecord]:
     # Ensure LM is configured for online evals
     configure_lm()
@@ -106,6 +126,8 @@ def run_evals(scenarios: List[Scenario]) -> List[EvalRecord]:
             res.advice or "", actions_lines, risks_lines
         )
 
+        overlap = _overlap_ratio(res.advice or "", playbook) if playbook else 0.0
+
         records.append(
             EvalRecord(
                 scenario_id=sc.id,
@@ -121,6 +143,7 @@ def run_evals(scenarios: List[Scenario]) -> List[EvalRecord]:
                 format_ok=format_ok,
                 actions_count=a_count,
                 risks_count=r_count,
+                overlap_ratio=overlap,
             )
         )
 
@@ -134,11 +157,13 @@ def summarize_results(records: List[EvalRecord]) -> Dict[str, Any]:
     fmt_ok = sum(1 for r in records if r.format_ok)
     avg_score = sum(r.critic_score for r in records) / n
     avg_latency = sum(r.latency_ms for r in records) / n
+    avg_overlap = sum((r.overlap_ratio or 0.0) for r in records) / n
     return {
         "count": n,
         "format_ok_rate": fmt_ok / n,
         "avg_critic_score": avg_score,
         "avg_latency_ms": avg_latency,
+        "avg_playbook_overlap": avg_overlap,
     }
 
 
