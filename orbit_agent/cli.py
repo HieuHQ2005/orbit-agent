@@ -19,6 +19,9 @@ from .evals import (
     run_evals,
     summarize_results,
     save_eval_results,
+    grade_with_rubric,
+    summarize_grades,
+    save_grades,
 )
 import os
 import subprocess
@@ -556,6 +559,49 @@ def eval_report(
             )
     except Exception as e:
         logger.error(f"Eval report failed: {e}")
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise typer.Exit(1)
+
+
+@eval_app.command("grade")
+def eval_grade(
+    dataset: str = typer.Option(
+        "evals/scenarios_personas.yaml", help="Path to scenarios YAML with rubrics"
+    ),
+    results_path: str = typer.Option(
+        ".orbit/evals/latest.jsonl", help="Path to JSONL results to grade"
+    ),
+    out: str = typer.Option(
+        ".orbit/evals/grades.jsonl", help="Where to write rubric grades JSONL"
+    ),
+):
+    """Run rubric-based grading on prior eval results and summarize."""
+    try:
+        scns = load_scenarios(dataset)
+        p = Path(results_path)
+        if not p.exists():
+            console.print(f"[red]Not found:[/red] {results_path}")
+            raise typer.Exit(1)
+        from .evals import EvalRecord
+
+        rec_objs = []
+        for line in p.read_text().splitlines():
+            if not line.strip():
+                continue
+            rec_objs.append(EvalRecord(**json.loads(line)))
+        graded = grade_with_rubric(rec_objs, scns)
+        if not graded:
+            console.print(
+                "[yellow]No rubric-graded items (no rubrics present or LLM unavailable)[/yellow]"
+            )
+            raise typer.Exit(0)
+        save_grades(graded, out)
+        summary = summarize_grades(graded)
+        console.print("[bold]Rubric Summary[/]:")
+        for k, v in summary.items():
+            console.print(f"- {k}: {v}")
+    except Exception as e:
+        logger.error(f"Eval grade failed: {e}")
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(1)
 

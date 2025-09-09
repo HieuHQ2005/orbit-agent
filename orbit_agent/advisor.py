@@ -261,6 +261,37 @@ class HighOrbitAdvisor(dspy.Module):
 
             context_with_history = context + recent_context
 
+            # Attempt tool-augmented analysis for structured snippets
+            tool_results = ""
+            try:
+                import re
+
+                from .tools.retention import calculate_cohort_retention
+                from .tools.funnel import analyze_funnel, FunnelStep
+
+                # Extract inline JSON-ish snippet if present
+                m = re.search(r"(\[.*\]|\{.*\})", history_str, re.DOTALL)
+                if m:
+                    snippet = m.group(1)
+                    import json
+
+                    data = json.loads(snippet)
+                    if isinstance(data, list) and data and isinstance(data[0], list):
+                        # Retention cohorts
+                        res = calculate_cohort_retention(data)
+                        tool_results = (
+                            f"Cohorts={len(res)}; Example retention for first cohort: "
+                            f"{', '.join(f'{r:.1f}%' for r in res[0].retention_rates[:4])}"
+                        )
+                    elif isinstance(data, list) and data and isinstance(data[0], dict):
+                        # Funnel steps
+                        steps = [FunnelStep(**s) for s in data]
+                        res = analyze_funnel(steps)
+                        rates = ", ".join(f"{r:.1f}%" for r in res.conversion_rates)
+                        tool_results = f"Funnel steps={len(steps)}; Conversion: {rates}"
+            except Exception:
+                tool_results = tool_results or ""
+
             # Best-of-N generation and rerank by critic
             from .config import get_config
 
@@ -276,7 +307,7 @@ class HighOrbitAdvisor(dspy.Module):
                     history=history_str,
                     playbook=playbook,
                     context=context_with_history,
-                    tool_results="No tools used in this session",
+                    tool_results=tool_results or "No tools used in this session",
                 )
 
                 # Critique with retry

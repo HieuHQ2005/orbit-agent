@@ -4,7 +4,7 @@ import json
 import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 
 import yaml
 
@@ -224,3 +224,29 @@ def save_eval_results(records: List[EvalRecord], out_path: str | Path) -> None:
     with p.open("w") as f:
         for r in records:
             f.write(json.dumps(asdict(r)) + "\n")
+
+
+def parse_grade_json(text: str) -> Optional[Dict[str, Any]]:
+    try:
+        return json.loads(text)
+    except Exception:
+        return None
+
+
+def summarize_grades(graded: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Summarize rubric grades (expects items from grade_with_rubric)."""
+    parsed = [parse_grade_json(g.get("grade_json", "")) for g in graded]
+    parsed = [p for p in parsed if isinstance(p, dict) and "overall" in p]
+    if not parsed:
+        return {"count": 0}
+    n = len(parsed)
+    avg_overall = sum(float(p.get("overall", 0)) for p in parsed) / n
+    return {"count": n, "avg_overall": avg_overall}
+
+
+def save_grades(graded: List[Dict[str, Any]], out_path: str | Path) -> None:
+    p = Path(out_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("w") as f:
+        for g in graded:
+            f.write(json.dumps(g) + "\n")
