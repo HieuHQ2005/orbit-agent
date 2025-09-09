@@ -1,0 +1,21 @@
+# Development dependencies
+-r requirements.txt
+
+# Testing
+pytest==8.3.2
+pytest-cov==5.0.0
+pytest-asyncio==0.23.8
+
+# Code quality
+black==24.8.0
+ruff==0.6.3
+mypy==1.11.2
+pre-commit==3.8.0
+
+# Documentation
+mkdocs==1.6.0
+mkdocs-material==9.5.31
+
+# Type stubs
+types-PyYAML==6.0.12.20240808
+types-requests==2.32.0.20240712

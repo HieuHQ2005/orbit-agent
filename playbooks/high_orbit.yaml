@@ -1,0 +1,28 @@
+mindset:
+  north_star: "Optimize for $1B vs $0, not for 1–2% dilution."
+  axioms:
+    - "Talk to users weekly; ship weekly; measure weekly."
+    - "Be default‑alive or get to default‑alive quickly."
+    - "Do things that don't scale in the beginning."
+    - "Focus: one wedge, one ICP, one killer use case."
+    - "Pricing is a go‑to‑market weapon; make it simple."
+    - "Burn is a choice. Choose survival, then speed."
+  anti_patterns:
+    - "Vanity metrics eclipsing retention and revenue."
+    - "Adding features instead of fixing activation/retention."
+    - "Boiling the ocean ICP; unclear 'must-have' pain."
+    - "Infinite discovery without decisions and deadlines."
+
+drills:
+  brutal_questions:
+    - "What is the sharpest pain we solve, for whom, and how do we *prove* it in a week?"
+    - "If we lost 90% of our cash, what would we ship in 14 days to survive?"
+    - "Which channel drives the fastest qualified learning right now?"
+    - "What is the single metric that best predicts renewal/retention?"
+  focus_template: |
+    • 48h Objective: <short outcome>
+    • Hypothesis: <how this moves the only metric>
+    • Users to contact: <5–10 names or segments>
+    • Offers/tests: <cheap, fast, sharp>
+    • Definition of done: <binary>
+    • Risks & pre-mortem: <top 3>

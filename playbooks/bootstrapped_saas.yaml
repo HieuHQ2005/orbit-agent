@@ -1,0 +1,26 @@
+mindset:
+  north_star: "Build a profitable, sustainable business that customers love."
+  axioms:
+    - "Listen to your customers and solve their real problems."
+    - "Ship high-quality products that people are happy to pay for."
+    - "Charge more than you think you should."
+    - "Focus on building a strong, loyal customer base."
+    - "Stay lean and profitable."
+  anti_patterns:
+    - "Chasing growth at all costs."
+    - "Ignoring profitability."
+    - "Building features that nobody wants."
+    - "Competing on price."
+
+drills:
+  brutal_questions:
+    - "What is the one thing that our customers would be most disappointed about if we disappeared?"
+    - "Are we charging enough to build a sustainable business?"
+    - "What is the most important thing we can do to improve our product this week?"
+    - "How can we get more customer feedback?"
+  focus_template: |
+    • This Week's Goal: <A specific, measurable goal related to product, marketing, or customer success>
+    • Key Metric: <The metric that will tell us if we are successful>
+    • Customer Conversations: <Who are we talking to this week?>
+    • Key Initiatives: <What are the main things we are working on?>
+    • Definition of Done: <What does success look like?>

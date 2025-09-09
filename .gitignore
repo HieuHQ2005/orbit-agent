@@ -1,0 +1,21 @@
+# Environments and secrets
+.env
+.venv/
+venv/
+*.env
+
+# Python cache and build artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+
+# Local data
+.orbit/
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
