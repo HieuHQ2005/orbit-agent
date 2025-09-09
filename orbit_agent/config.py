@@ -197,71 +197,24 @@ def get_config() -> AppConfig:
 def configure_lm() -> AppConfig:
     """Configure the language model per dspy.ai and return config.
 
-    Priority:
-    1) Use dspy.LM with the `model` string (preferred per https://dspy.ai/)
-    2) If dspy.LM is unavailable or fails and provider is OpenAI, fall back to dsp.GPT3
-    3) If provider is Ollama and dspy.LM fails, fall back to a minimal Ollama adapter
+    Uses dspy.LM(model=...) and sets it via dspy.configure. If configuration fails,
+    we log and continue so non-LLM commands still work.
     """
     config = get_config()
 
-    model = config.lm.model
-    temperature = config.lm.temperature
-    max_tokens = config.lm.max_tokens
-
-    # 1) Preferred: use modern dspy.LM API (as in dspy.ai)
     try:
         lm = dspy.LM(
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
+            model=config.lm.model,
+            temperature=config.lm.temperature,
+            max_tokens=config.lm.max_tokens,
         )
         dspy.configure(lm=lm)
-        logger.info(f"Configured LM via dspy.LM: {model}")
+        logger.info(f"Configured LM via dspy.LM: {config.lm.model}")
         return config
     except Exception as e:
-        logger.warning(f"dspy.LM unavailable or failed: {e}")
-
-    # 2) OpenAI fallback via dsp.GPT3 (legacy installs)
-    try:
-        if model.startswith("openai/"):
-            import importlib
-
-            dsp = importlib.import_module("dsp")
-            mname = model.replace("openai/", "")
-            lm_impl = dsp.GPT3(
-                model=mname,
-                api_key=config.lm.api_key or os.getenv("OPENAI_API_KEY"),
-                api_base=os.getenv("OPENAI_BASE_URL"),
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-            dspy.configure(lm=lm_impl)
-            logger.info(f"Configured LM via dsp.GPT3: {model}")
-            return config
-    except Exception as e:
-        logger.warning(f"dsp.GPT3 fallback unavailable: {e}")
-
-    # 3) Ollama fallback via minimal adapter
-    try:
-        if model.startswith("ollama_chat/") or model.startswith("ollama/"):
-            from .lm_providers import OllamaLM
-
-            mname = model.replace("ollama_chat/", "").replace("ollama/", "")
-            lm_impl = OllamaLM(
-                model=mname,
-                base_url=config.lm.api_base or os.getenv("OLLAMA_API_BASE", "http://localhost:11434"),
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-            dspy.configure(lm=lm_impl)
-            logger.info(f"Configured LM via Ollama adapter: {model}")
-            return config
-    except Exception as e:
-        logger.warning(f"Ollama adapter fallback unavailable: {e}")
-
-    # Final: no LM configured, allow non-LLM commands to work
-    logger.error("No usable LM configuration found. Proceeding without LM.")
-    return config
+        logger.error(f"Failed to configure LM via dspy.LM: {e}")
+        logger.info("Continuing without LM configuration for non-LLM commands")
+        return config
 
 
 def reload_config():
