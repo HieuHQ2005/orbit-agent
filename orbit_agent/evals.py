@@ -65,14 +65,22 @@ def _split_lines(value: Any) -> List[str]:
     return []
 
 
-def _format_eval(advice: str, actions_lines: List[str], risks_lines: List[str]) -> Tuple[bool, int, int]:
+def _format_eval(
+    advice: str, actions_lines: List[str], risks_lines: List[str]
+) -> Tuple[bool, int, int]:
     # Clean bullet prefixes
-    a_clean = [ln.lstrip("123456789. -•*").strip() for ln in actions_lines if ln.strip()]
+    a_clean = [
+        ln.lstrip("123456789. -•*").strip() for ln in actions_lines if ln.strip()
+    ]
     r_clean = [ln.lstrip("123456789. -•*").strip() for ln in risks_lines if ln.strip()]
     actions_count = len(a_clean)
     risks_count = len(r_clean)
     # Format rules: 3-5 actions, exactly 3 risks, advice non-empty
-    format_ok = (3 <= actions_count <= 5) and (risks_count == 3) and bool(advice and advice.strip())
+    format_ok = (
+        (3 <= actions_count <= 5)
+        and (risks_count == 3)
+        and bool(advice and advice.strip())
+    )
     return format_ok, actions_count, risks_count
 
 
@@ -94,7 +102,9 @@ def run_evals(scenarios: List[Scenario]) -> List[EvalRecord]:
 
         actions_lines = _split_lines(res.actions_48h)
         risks_lines = _split_lines(res.risks)
-        format_ok, a_count, r_count = _format_eval(res.advice or "", actions_lines, risks_lines)
+        format_ok, a_count, r_count = _format_eval(
+            res.advice or "", actions_lines, risks_lines
+        )
 
         records.append(
             EvalRecord(
@@ -169,12 +179,16 @@ try:
                 rubric=rubric_text,
                 advice=r.advice,
             )
-            graded.append({
-                "scenario_id": r.scenario_id,
-                "grade_json": out.grade_json,
-            })
+            graded.append(
+                {
+                    "scenario_id": r.scenario_id,
+                    "grade_json": out.grade_json,
+                }
+            )
         return graded
+
 except Exception:  # pragma: no cover
+
     def grade_with_rubric(records: List[EvalRecord], scenarios: List[Scenario]):
         return []
 

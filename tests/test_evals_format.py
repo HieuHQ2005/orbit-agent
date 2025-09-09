@@ -19,4 +19,3 @@ def test_format_eval_too_few_actions_or_risks():
     assert ok is False
     assert a_count == 1
     assert r_count == 2
-

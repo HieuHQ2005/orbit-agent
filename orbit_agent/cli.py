@@ -491,9 +491,7 @@ def context_edit(
 
 @eval_app.command("run")
 def eval_run(
-    dataset: str = typer.Option(
-        "evals/scenarios.yaml", help="Path to scenarios YAML"
-    ),
+    dataset: str = typer.Option("evals/scenarios.yaml", help="Path to scenarios YAML"),
     out: str = typer.Option(
         ".orbit/evals/latest.jsonl", help="Path to save JSONL results"
     ),
@@ -522,9 +520,7 @@ def eval_run(
 
 @eval_app.command("report")
 def eval_report(
-    results_path: str = typer.Argument(
-        ..., help="Path to JSONL results from eval run"
-    ),
+    results_path: str = typer.Argument(..., help="Path to JSONL results from eval run"),
 ):
     """Summarize a JSONL results file from eval run."""
     try:
