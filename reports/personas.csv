@@ -1,0 +1,6 @@
+scenario_id,count,avg_critic_score,avg_overlap,avg_latency_ms
+seed_ceo_focus,1,9.0,0.0,12843.744039535522
+series_a_ceo_retention,1,9.0,0.0,14227.832794189453
+consumer_app_activation,1,10.0,0.0,22965.211868286133
+enterprise_pipeline,1,9.0,0.0,11418.672800064087
+pricing_reframe,1,9.0,0.0,10158.666133880615
