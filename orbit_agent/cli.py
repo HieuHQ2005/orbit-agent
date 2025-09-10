@@ -342,6 +342,12 @@ def retention(cohorts_json: str):
     """Calculate cohort retention from a JSON string."""
     try:
         cohorts = json.loads(cohorts_json)
+        if not isinstance(cohorts, list) or not all(
+            isinstance(c, list) for c in cohorts
+        ):
+            raise ValueError(
+                "Expected a list of cohorts, e.g. [[100,60,40],[80,55,35]]"
+            )
         results = calculate_cohort_retention(cohorts)
 
         table = Table(title="Cohort Retention Analysis")
@@ -363,6 +369,9 @@ def retention(cohorts_json: str):
 
     except json.JSONDecodeError as e:
         console.print(f"[bold red]JSON Error:[/bold red] Invalid format: {e}")
+        raise typer.Exit(1)
+    except ValueError as e:
+        console.print(f"[bold red]Input Error:[/bold red] {e}")
         raise typer.Exit(1)
     except Exception as e:
         logger.error(f"Retention analysis failed: {e}")
