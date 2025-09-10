@@ -11,6 +11,8 @@ Built with **DSPy**. Opinionated toward YC‑style focus: default‑alive first,
 - **🛡️ Production Ready**: Rate limiting, retries, secure webhooks, and thread-safe SQLite storage.
 - **📊 Rich Output**: Beautiful tables and formatted responses in the CLI.
 - **🔄 Conversation Memory**: Maintains context across interactions.
+- **🧠 Best-of-N + Rerank**: Generate multiple drafts and pick the best via a critic.
+- **🧪 Evals & Rubrics**: Personas, rubrics, overlap penalty, and CSV/MD summaries.
 
 <details>
 <summary><strong>Recent Improvements</strong></summary>
@@ -60,6 +62,11 @@ python -m orbit_agent.cli runway --cash 800000 --burn 55000
 - `dilution`, `runway`, `ev`, `retention`, `funnel`: Financial and growth tools.
 - `context <show|set|edit>`: Manage your personal context.
 - `config-info`: Show current configuration.
+- `models list [--provider openai|anthropic]`: List available model IDs.
+- `eval run --dataset <yaml> --out <jsonl>`: Run evals and save results.
+- `eval report <jsonl>`: Show overall summary.
+- `eval grade --dataset <yaml> --results-path <jsonl> --out <jsonl>`: Rubric grading.
+- `eval summary --input-path <jsonl> [--csv-out <csv>] [--md-out <md>]`: Export summaries.
 
 ## Configuration
 
@@ -85,6 +92,11 @@ export PERSONAL_NUMBER=+1...
 export ORBIT_TRACK_USAGE=true
 export ORBIT_COST_PER_1K_PROMPT=0.005
 export ORBIT_COST_PER_1K_COMPLETION=0.015
+
+# Generation Quality (optional)
+export ORBIT_BEST_OF_N=1               # Number of drafts to generate for reranking
+export ORBIT_OVERLAP_ALPHA=2.0         # Penalize templating vs playbook overlap
+export ORBIT_CRITIC_LM=openai/o3-mini  # Separate critic LM (default for OpenAI)
 ```
 
 <details>
@@ -123,6 +135,24 @@ docker run -p 5000:5000 --env-file .env orbit-agent
 - **Model choice**: Use GPT-4o or Claude-3.5-Sonnet for serious advice. Local models are weaker on nuanced judgment.
 - **Responsibility**: Advice can be wrong or overly aggressive. You own all decisions.
 - **Data privacy**: Conversations are stored locally in SQLite. Enable encryption for sensitive data.
+- **Cost control**: Best-of-N and strong critics improve quality but cost more — use `ORBIT_BEST_OF_N` and a lower-cost critic (e.g. `o3-mini`) to balance.
+
+## Evals & Self‑Grading
+
+- Run persona scenarios with rubrics:
+  - `python -m orbit_agent.cli models list --provider openai`  # discover models
+  - `python -m orbit_agent.cli eval run --dataset evals/scenarios_personas.yaml --out .orbit/evals/personas.jsonl`
+  - `python -m orbit_agent.cli eval report .orbit/evals/personas.jsonl`
+  - `python -m orbit_agent.cli eval grade --dataset evals/scenarios_personas.yaml --results-path .orbit/evals/personas.jsonl --out .orbit/evals/personas_grades.jsonl`
+  - `python -m orbit_agent.cli eval summary --input-path .orbit/evals/personas.jsonl --csv-out reports/personas.csv --md-out reports/personas.md`
+
+- Suggested quality knobs:
+  - `ORBIT_LM=openai/gpt-4.1`
+  - `ORBIT_CRITIC_LM=openai/o3-mini`
+  - `ORBIT_BEST_OF_N=2` and `ORBIT_TEMPERATURE=0.35`
+  - `ORBIT_OVERLAP_ALPHA=2.5`
+
+- Tool‑aware analysis: include minimal JSON to auto-run retention/funnel/runway/EV tools.
 
 ## Contributing
 

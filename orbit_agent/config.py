@@ -193,7 +193,8 @@ def load_config() -> AppConfig:
     # Sensible default critic: prefer OpenAI o3-pro if no explicit critic set
     try:
         if config.critic_model is None and config.lm.model.startswith("openai/"):
-            config.critic_model = "openai/o3-pro"
+            # Default to a lower-cost reasoning critic
+            config.critic_model = "openai/o3-mini"
     except Exception:
         pass
 
