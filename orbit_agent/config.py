@@ -190,6 +190,13 @@ def load_config() -> AppConfig:
         overlap_alpha=float(os.getenv("ORBIT_OVERLAP_ALPHA", "2.0")),
     )
 
+    # Sensible default critic: prefer OpenAI o3-pro if no explicit critic set
+    try:
+        if config.critic_model is None and config.lm.model.startswith("openai/"):
+            config.critic_model = "openai/o3-pro"
+    except Exception:
+        pass
+
     return config
 
 

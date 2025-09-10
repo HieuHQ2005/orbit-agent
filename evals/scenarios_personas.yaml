@@ -53,3 +53,58 @@ scenarios:
       - "Pilot offer: specific terms and success criteria"
       - "Objection-handling: equips AE with scripts"
       - "Analysis: before/after unit economics"
+
+  - id: devtools_oss_adoption
+    persona: "Founding engineer, OSS devtools"
+    stage: "Community to paid"
+    prompt: "We have 2k GitHub stars and 50 weekly PRs, but only 6 paid teams. What do we do in the next 10 days to convert 10 teams?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "ICP definition: team profile and usage threshold"
+      - "Value hooks: enterprise features or SLAs anchored to pains"
+      - "Sales motion: contributor → champion path and scripts"
+      - "Proof: timeboxed pilots with acceptance criteria"
+
+  - id: fintech_compliance_blocker
+    persona: "Founder-CEO, fintech"
+    stage: "Pilot to production"
+    prompt: "2 banks stalled on compliance (SOC2, data residency). What can we do this week to unblock one and create momentum?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Blocker mapping: exact policy gaps and owners"
+      - "Mitigations: short-term controls and roadmap"
+      - "Exec alignment: risk framing and tradeoffs"
+      - "Timeline: mutual action plan with deadlines"
+
+  - id: healthcare_baa_go_to_market
+    persona: "Founder, healthcare SaaS"
+    stage: "First 5 logos"
+    prompt: "We’re HIPAA-ready but no BAAs signed yet. How do we land 3 design partners in 21 days?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Segmenting: clinics vs. mid-market, buyer roles"
+      - "Offer: BAA terms and pilot success definition"
+      - "Workflow proof: EHR integrations or mock flows"
+      - "References: seed a reference loop"
+
+  - id: marketplace_cold_start
+    persona: "Marketplace founder"
+    stage: "Cold-start"
+    prompt: "We have 200 supply signups and 40 demand signups. In 2 weeks, how do we get 20 transactions and avoid the chicken-and-egg?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Wedge: one subcategory with clear match rules"
+      - "Liquidity tactics: subsidies, guarantees, or batching"
+      - "Ops plan: manual matching or concierge"
+      - "Measurement: repeat usage indicator"
+
+  - id: ml_infra_pilot_to_contract
+    persona: "Founder, ML infra"
+    stage: "Pilots → paid"
+    prompt: "We have 3 pilot users with POCs running. What do we do in 10 days to convert 2 to paid?"
+    playbook: playbooks/high_orbit.yaml
+    rubric:
+      - "Value quant: baseline cost/latency vs. after"
+      - "Cut-list: deprioritize features for closed-won"
+      - "Close plan: exec sponsor and legal blockers"
+      - "Pricing: aligns to usage/value with clear limits"
