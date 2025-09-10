@@ -1,6 +1,11 @@
 scenario_id,count,avg_critic_score,avg_overlap,avg_latency_ms
-seed_ceo_focus,1,9.0,0.0,12843.744039535522
-series_a_ceo_retention,1,9.0,0.0,14227.832794189453
-consumer_app_activation,1,10.0,0.0,22965.211868286133
-enterprise_pipeline,1,9.0,0.0,11418.672800064087
-pricing_reframe,1,9.0,0.0,10158.666133880615
+seed_ceo_focus,1,9.0,0.0,60.81581115722656
+series_a_ceo_retention,1,9.0,0.0,13.698101043701172
+consumer_app_activation,1,10.0,0.0,14.04881477355957
+enterprise_pipeline,1,9.0,0.0,14.264106750488281
+pricing_reframe,1,9.0,0.0,13.95106315612793
+devtools_oss_adoption,1,9.0,0.0,12239.256143569946
+fintech_compliance_blocker,1,9.0,0.0,11795.646905899048
+healthcare_baa_go_to_market,1,9.0,0.0,10059.163093566895
+marketplace_cold_start,1,9.0,0.0,18546.04697227478
+ml_infra_pilot_to_contract,1,9.0,0.0,10304.81505393982
